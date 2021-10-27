@@ -1,6 +1,7 @@
 # Information  ------------------------------------------------------------
 # Requires imagemagick if you want to make the gif at the end 
 # syss.path = system("Echo $PATH", intern = TRUE)
+# Sys.getenv("PATH")
 # Sys.setenv(PATH = paste(Sys.getenv("PATH"),syss.path,sep = ":"))
 
 # Load libraries and functions  -------------------------------------------
@@ -9,6 +10,11 @@ rm(list = ls())
 # Remove all plots 
 dev.off(dev.list()["RStudioGD"])
 # set.seed(12345)
+# Creates dir 
+fold.exists = file.exists("~/Desktop/outns")
+if (!fold.exists) {
+  dir.create("~/Desktop/outns")
+}
 # export plots in png? 
 png.plot = TRUE 
 # dev.off()
