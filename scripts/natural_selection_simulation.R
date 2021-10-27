@@ -1,7 +1,6 @@
 # Information  ------------------------------------------------------------
 # Requires imagemagick if you want to make the gif at the end 
-# system("Echo $PATH")
-# syss.path = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin"
+# syss.path = system("Echo $PATH", intern = TRUE)
 # Sys.setenv(PATH = paste(Sys.getenv("PATH"),syss.path,sep = ":"))
 
 # Load libraries and functions  -------------------------------------------
