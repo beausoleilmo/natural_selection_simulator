@@ -1,21 +1,8 @@
 # Information  ------------------------------------------------------------
-# Inspiration 
-# https://www.youtube.com/watch?v=0ZGbIKd0XrM&ab_channel=Primer 
-# http://www.netlogoweb.org/launch#http://www.netlogoweb.org/assets/modelslib/Curricular%20Models/GenEvo/GenEvo%203%20Genetic%20Drift%20and%20Natural%20Selection.nlogo
-
 # Requires imagemagick if you want to make the gif at the end 
+# system("Echo $PATH")
 # syss.path = "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin"
-# Sys.getenv("PATH") <- paste(Sys.getenv("PATH"), syss.path, sep = ":")
 # Sys.setenv(PATH = paste(Sys.getenv("PATH"),syss.path,sep = ":"))
-
-# Cost of having higher speed? 
-# i.e., costs more to go faster or the energy spent is proportional to the speed
-# fitness function                                                                                
-# Including more traits 
-
-# when dot is eating food in X range, it gets fitness units 
-# 5 = survives
-# Remaining points reproduce 
 
 # Load libraries and functions  -------------------------------------------
 # Remove all variables 
@@ -361,3 +348,10 @@ plot(x = df.speed$gen,
 points(x = 1:length(rec.mean),
        y = rec.mean, type = "l",lwd =2,
        pch =19, cex =.9, col = alpha("black",alpha = .9))
+
+# Add population plot of the trait evolving 
+ggplot(df.speed, aes(speed)) +
+geom_histogram() +
+  geom_density(aes(y=1 * ..count..))+
+  ggplot2::facet_wrap(~gen, ncol = 2) + 
+  theme_bw()
