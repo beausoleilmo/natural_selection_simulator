@@ -68,11 +68,11 @@ ssleep = 0.0
 # Initial plot ------------------------------------------------------------
 # Background 
 back = "black"
-buff = 1
+buff = 0.1 # percentage
 # Define the environment boundary 
 maxrange = 50
-range.x = c(0-buff, maxrange + buff)
-range.y = c(0-buff, maxrange + buff)
+range.x = c(0-(maxrange*buff), maxrange + (maxrange*buff))
+range.y = c(0-(maxrange*buff), maxrange + (maxrange*buff))
 
 # Make initial plot 
 if (png.plot) {
@@ -84,10 +84,12 @@ resetplot(title = "Initial",
           col = back)
 
 # Init food items ---------------------------------------------------------
-n.food = 25 # number of initial food items 
+
+food.density = .04 # between 0 and 1 
+n.food = food.density*maxrange^2 # number of initial food items 
 col.food = "grey20" # Colour 
 food.capacity = 30 # Maximum amount of food particles in the environment 
-regen.food = 5 # Number of food items added if under the food.capacity of the environment
+regen.food = 50 # Number of food items added if under the food.capacity of the environment
 
 # Generate position of food items 
 food.x = runif(n.food, 0, maxrange) 
@@ -104,8 +106,8 @@ points(food.df,
 # Init bacteria individuals -----------------------------------------------
 # Generate bacteria (position = (x,y) and colour = species)
 n.sp = 1
-n.bac.max = 25 # this has to be even to simplify programming if the number of sp is greater than 1 
-
+n.bac.max = 50 # this has to be even to simplify programming if the number of sp is greater than 1 
+nb.bac = n.bac.max
 # If more than one species, you can select the colours here 
 col.bac = c("yellow","blue","red",
             "green","purple","orange","grey50","cyan")
@@ -128,7 +130,7 @@ add.circles(pos.bac,radius = radius)
 mean.speed.random = 7
 mut.strength = .5
 # Number of iterations (generations) total
-it.max = 12
+it.max = 100
 
 speed.max.sp = abs(rnorm(n.sp, 
                          mean = mean.speed.random, 
@@ -172,7 +174,7 @@ for (ittt in 1:it.max) {
                    nrow = nrow(dist.bac),
                    ncol = n.sp)
   run = 1 # reset run to 1 
-  max.run = 4 # Number of frames in which the bacteria can SEARCH for food items 
+  max.run = 4 # Number of frames-1 in which the bacteria can SEARCH for food items 
   
   # Make the frames in which bacteria are searching 
   while (run != max.run) {
@@ -306,7 +308,7 @@ for (ittt in 1:it.max) {
   dist.bac = matrix(c(bac.s.speed, bac.r.speed + mutation),
                     ncol = n.sp, 
                     byrow = TRUE)
-  
+  nb.bac = c(nb.bac,nrow(dist.bac))
   # If no bacteria reproduce, stop 
   if (length(pos.bac)==0) {
     stop("No bacterium survived!\n")
@@ -324,7 +326,7 @@ if (png.plot) {
   dev.off()
 }
 if (make.gif & it.max == ittt) {
-  system("convert -delay 20 -loop 0 ~/Desktop/outns/*.png ~/Desktop/outns/myimage.gif", intern = TRUE)
+  system("convert -delay 20 -loop 0 ~/Desktop/outns/*.png ~/Desktop/outns/ns.film.gif", intern = TRUE)
 }
 
 # Summary statistics ------------------------------------------------------
@@ -341,6 +343,10 @@ for (end in 1:1) {
 
 dim(dist.bac)
 
+if (png.plot) {
+  pdf("~/Desktop/outns/popsize.pdf",width = 5, height = 5,) 
+  
+}
 # Make a plot of the change in mean speed through the generations 
 plot(x = df.speed$gen, 
      y = df.speed$speed, 
@@ -360,3 +366,9 @@ geom_histogram() +
   geom_density(aes(y=1 * ..count..))+
   ggplot2::facet_wrap(~gen, ncol = 2) + 
   theme_bw()
+
+plot(nb.bac~c(1:(ittt+1)), pch =19, type = "l")
+
+if (png.plot) {
+  dev.off()
+}

@@ -15,7 +15,10 @@ The script can generate plots (from base R) and a gif (using [ImageMagick](https
 
 - Cost of having higher speed? 
   - i.e., costs more to go faster or the energy spent is proportional to the speed
-- Add a fitness function                                                                                
+- Add a fitness function
+- try resetting the position of bacteria and of food after search time is done 
+
+
 # Including more traits 
 
 # Inspirations 
