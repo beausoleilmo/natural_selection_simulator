@@ -11,6 +11,13 @@ In this repository, I explore how to program natural selection in R.
 
 The script can generate plots (from base R) and a gif (using [ImageMagick](https://imagemagick.org/index.php)). 
 
+
+<!-- ![Example of a simulation run by the program](gif/ns.film.gif)-->
+<img src="gif/ns.film.gif" width="400" height="400" />
+
+The bacteria are in yellow, the food in red. 
+
+
 # Things to modify or add 
 
 - Cost of having higher speed? 
