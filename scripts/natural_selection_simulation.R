@@ -330,7 +330,7 @@ if (make.gif & it.max == ittt) {
   if (!fold.exists.gif) {
     dir.create("gif")
   }
-  system("convert -delay 20 -loop 0 ~/Github_proj/natural_selection_simulator/*.png ~/Github_proj/natural_selection_simulator/gif/ns.film.gif", intern = TRUE)
+  system("convert -delay 20 -loop 0 ~/Github_proj/natural_selection_simulator/outns/*.png ~/Github_proj/natural_selection_simulator/gif/ns.film.gif", intern = TRUE)
 }
 
 # Summary statistics ------------------------------------------------------
