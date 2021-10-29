@@ -24,9 +24,7 @@ The bacteria are in yellow, the food in red.
   - i.e., costs more to go faster or the energy spent is proportional to the speed
 - Add a fitness function
 - try resetting the position of bacteria and of food after search time is done 
-
-
-# Including more traits 
+- Including more traits 
 
 # Inspirations 
 - https://www.youtube.com/watch?v=0ZGbIKd0XrM&ab_channel=Primer 
