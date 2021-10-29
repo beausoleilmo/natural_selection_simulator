@@ -11,9 +11,9 @@ rm(list = ls())
 dev.off(dev.list()["RStudioGD"])
 # set.seed(12345)
 # Creates dir 
-fold.exists = file.exists("~/Desktop/outns")
+fold.exists = file.exists("outns")
 if (!fold.exists) {
-  dir.create("~/Desktop/outns")
+  dir.create("outns")
 }
 # export plots in png? 
 png.plot = TRUE 
@@ -21,8 +21,8 @@ png.plot = TRUE
 clean.PNG = TRUE
 if(clean.PNG){
   #Define the file name that will be deleted
-  fn <- "~/Desktop/outns/ns*.png"
-  files.to.remove = file.path("~/Desktop/outns",list.files(path = "~/Desktop/outns/",pattern = ".png"))
+  fn <- "outns/ns*.png"
+  files.to.remove = file.path("outns",list.files(path = "outns/",pattern = ".png"))
   lapply(files.to.remove, file.remove)
 }
 
@@ -76,7 +76,7 @@ range.y = c(0-(maxrange*buff), maxrange + (maxrange*buff))
 
 # Make initial plot 
 if (png.plot) {
-  png("~/Desktop/outns/ns%04d.png",width = 5, height = 5,units = "in",res = 300) 
+  png("outns/ns%04d.png",width = 5, height = 5,units = "in",res = 300) 
 }
 resetplot(title = "Initial", 
           xlim = range.x, 
@@ -164,7 +164,7 @@ if (png.plot) {
 
 # Model iterations --------------------------------------------------------
 if (png.plot) {
-  png("~/Desktop/outns/ns%04d.png",width = 5, height = 5,units = "in",res = 300) 
+  png("outns/ns%04d.png",width = 5, height = 5,units = "in",res = 300) 
 }
 for (ittt in 1:it.max) {
   cat("\n\nGeneration #",ittt,"---------------------\n")
@@ -326,7 +326,11 @@ if (png.plot) {
   dev.off()
 }
 if (make.gif & it.max == ittt) {
-  system("convert -delay 20 -loop 0 ~/Desktop/outns/*.png ~/Desktop/outns/ns.film.gif", intern = TRUE)
+  fold.exists.gif = file.exists("gif")
+  if (!fold.exists.gif) {
+    dir.create("gif")
+  }
+  system("convert -delay 20 -loop 0 ~/Github_proj/natural_selection_simulator/*.png ~/Github_proj/natural_selection_simulator/gif/ns.film.gif", intern = TRUE)
 }
 
 # Summary statistics ------------------------------------------------------
@@ -344,7 +348,11 @@ for (end in 1:1) {
 dim(dist.bac)
 
 if (png.plot) {
-  pdf("~/Desktop/outns/popsize.pdf",width = 5, height = 5,) 
+  fold.exists.gif = file.exists("summary_stats")
+  if (!fold.exists.gif) {
+    dir.create("summary_stats")
+  }
+  pdf("summary_stats/popsize.pdf",width = 5, height = 5,) 
   
 }
 # Make a plot of the change in mean speed through the generations 
