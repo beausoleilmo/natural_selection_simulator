@@ -5,6 +5,7 @@
 # Sys.setenv(PATH = paste(Sys.getenv("PATH"),syss.path,sep = ":"))
 # Remove all variables 
 rm(list = ls())
+startTime = Sys.time()
 
 # System variables --------------------------------------------------------
 # dev.off()
@@ -37,9 +38,9 @@ resetplot(title = "Initial",
           col = back)
 
 # Init food items ---------------------------------------------------------
-food.density = .01 # between 0 and 1 
-n.food = food.density*maxrange^2 # number of initial food items 
-n.food
+# food.density = .01 # between 0 and 1 
+# n.food = food.density*maxrange^2 # number of initial food items 
+n.food = 50
 col.food = "grey20" # Colour 
 food.capacity = 30 # Maximum amount of food particles in the environment 
 regen.food = 50 # Number of food items added if under the food.capacity of the environment
@@ -94,7 +95,8 @@ dist.bac = matrix(rnorm(n.bac.max, speed.max.sp, 1),
                   byrow = TRUE)
 # Make initial bacterium species database 
 df.speed = data.frame(speed = dist.bac,
-                      gen = 0)
+                      gen = 0,
+                      org.id = 1:nrow(dist.bac))
 # Get average initial speed  
 avg.initial = mean(dist.bac)
 
@@ -115,16 +117,21 @@ if (png.plot) {
 }
 
 # We need to keep track of 
-# 1. the fitness of all traits
-# 2. The energy function 
-# 3. The nb of food items, eaten and regenerated  
+# 1. the fitness of all traits (OK for speed)
+# 2. The energy function (OK for speed)
+# 3. The nb of food items, eaten and regenerated through the generations
 # 4. the age of the org. and age at death 
 # 5. Population size (net change, birth and death)
 # 
 # Model iterations --------------------------------------------------------
 if (png.plot) {
-  png("outns/ns%04d.png",width = 5, height = 5,units = "in",res = 300) 
+  png("outns/ns%04d.png", width = 5, height = 5,units = "in",res = 300) 
 }
+food.eaten.in.gen = n.food
+n.birth = n.bac.max
+n.death = 0
+# Energy function 
+expected.energy = function(speed) -1/4* speed^2
 for (no.gen in 1:nb.gen) {
   cat("\n\nGeneration #", no.gen, "---------------------\n")
   cat("There are", nrow(dist.bac),"bacteria\n")
@@ -133,7 +140,6 @@ for (no.gen in 1:nb.gen) {
                    nrow = nrow(dist.bac),
                    ncol = n.sp)
   # Reset the energy values in this generation 
-  expected.energy = function(speed) -1/2* speed^2
   energy.pt = 100
   energ.val = matrix(energy.pt,
                      nrow = nrow(dist.bac),
@@ -274,6 +280,8 @@ for (no.gen in 1:nb.gen) {
   cat("---------------------\n")
   cat(sum(!survival.bac),"bacteria died\n")
   
+  n.death = c(n.death, sum(!survival.bac))
+  
   # Get phenotypes of surviving bacteria 
   bac.s.speed = dist.bac[survival.bac]
   
@@ -281,7 +289,7 @@ for (no.gen in 1:nb.gen) {
   reproduce.bac = fit.val >= 2
   nb.bac.repro = sum(reproduce.bac)
   cat(nb.bac.repro,"bacteria reproduced\n")
-  
+  n.birth = c(n.birth,nb.bac.repro)
   # position of the bacteria that survived 
   pos.suv = pos.bac[survival.bac,]
   # position of the bacteria that reproduce
@@ -300,7 +308,10 @@ for (no.gen in 1:nb.gen) {
   dist.bac = matrix(c(bac.s.speed, bac.r.speed + mutation),
                     ncol = n.sp, 
                     byrow = TRUE)
+  
   nb.bac = c(nb.bac,nrow(dist.bac))
+  
+  food.eaten.in.gen = c(food.eaten.in.gen,n.food-nrow(food.df))
   # If no bacteria reproduce, stop 
   if (length(pos.bac)==0) {
     stop("No bacterium survived!\n")
@@ -308,10 +319,17 @@ for (no.gen in 1:nb.gen) {
   
   # Record the mean phenotype in each generation 
   rec.mean = c(rec.mean, mean(dist.bac))
+  max.id = max(df.speed$org.id)+1
+  
+  nrow(dist.bac)
+  current.gen=df.speed[df.speed$gen %in% (no.gen-1),"org.id"]
+  
   # Record the individual phenotypes of each bacterium with the generation in which it is found 
   df.speed = rbind(df.speed,
                    data.frame(speed = dist.bac, 
-                              gen = no.gen))
+                              gen = no.gen,
+                              org.id = c(current.gen[survival.bac],
+                                         seq(max.id,max.id+length(bac.r.speed)-1))))
 } # End for loop of the NS_algorithm 
 
 if (png.plot) {
@@ -347,18 +365,6 @@ if (png.plot) {
   pdf("summary_stats/popsize.pdf",width = 5, height = 5,) 
   
 }
-# Make a plot of the change in mean speed through the generations 
-plot(x = df.speed$gen, 
-     y = df.speed$speed, 
-     xlab = "Generations",
-     ylab = "Mean speed",
-     xlim = c(1,length(rec.mean)),
-     ylim = range(df.speed$speed),pch =19,
-     type = "p",cex =.9, col = alpha("red",alpha = .1))
-
-points(x = 1:length(rec.mean),
-       y = rec.mean, type = "l",lwd =2,
-       pch =19, cex =.9, col = alpha("black",alpha = .9))
 
 # Add population plot of the trait evolving 
 ggplot(df.speed, aes(speed)) +
@@ -367,8 +373,119 @@ ggplot(df.speed, aes(speed)) +
   ggplot2::facet_wrap(~gen, ncol = 2) + 
   theme_bw()
 
-plot(nb.bac~c(1:(no.gen+1)), pch =19, type = "l")
+par(mfrow = c(5,1))
+
+# Make a plot of the change in mean speed through the generations 
+plot(x = df.speed$gen+1, 
+     y = df.speed$speed, 
+     xlab = "Generations",
+     ylab = "Mean speed",
+     main = "Trait change over generations",
+     xlim = c(1,length(rec.mean)),
+     ylim = range(df.speed$speed), 
+     pch =19,
+     type = "n",
+     cex =.9, 
+     col = alpha("red",alpha = .1))
+
+pol.dat = df.speed %>% 
+  group_by(gen) %>% 
+  summarise(sd = sd(speed),
+            mean = mean(speed),
+            min=min(speed),
+            max=max(speed))
+
+y.pol = c(pol.dat$mean+pol.dat$sd,rev(pol.dat$mean-pol.dat$sd))
+
+polygon(x = c(1:(no.gen+1), rev(1:(no.gen+1))), 
+        y = y.pol, 
+        col = scales::alpha("grey50",.5), border = NA)
+
+points(x = df.speed$gen+1, 
+       y = df.speed$speed, 
+       cex =.9, 
+       pch =19,
+       col = alpha("red",alpha = .1))
+points(x = 1:length(rec.mean),
+       y = rec.mean, 
+       type = "l",lwd =2,
+       pch =19, cex =.9, col = alpha("black",alpha = .9))
+points(x = 1:length(rec.mean),
+       y = pol.dat$min, 
+       type = "l",lwd =2,
+       pch =19, cex =.9, col = alpha("grey50",alpha = .6))
+points(x = 1:length(rec.mean),
+       y = pol.dat$max, 
+       type = "l",lwd =2,
+       pch =19, cex =.9, col = alpha("grey50",alpha = .6))
+abline(h = rec.mean[1],lty = 3)
+### 
+plot(nb.bac~c(1:(no.gen+1)), 
+     xlab = "Generations",
+     ylab = "Number of bacteria",
+     ylim =range(0,nb.bac),
+     pch =19, type = "l", 
+     main = "Population size")
+plot(food.eaten.in.gen~c(1:(no.gen+1)), 
+     xlab = "Generations",
+     ylab = "Number of food items eaten",
+     ylim =range(0,food.eaten.in.gen),
+     pch =19, type = "l", 
+     main = "Food eaten through time")
+abline(h = n.food, lty=3)
+popul.dyn.birth = data.frame(nb = n.birth,type ="birth",gen = 1:length(n.birth))
+popul.dyn.death = data.frame(nb = -n.death,type ="death",gen = 1:length(n.death))
+pop.dyn = rbind(popul.dyn.birth,popul.dyn.death)
+
+bp.out = barplot(height = popul.dyn.birth$nb,
+                 names.arg = popul.dyn.birth$gen,
+                 col = "green",
+                 main = "",
+                 xlab = "Generations",
+                 ylab = "Number of organisms",
+                 ylim = range(pop.dyn$nb))
+barplot(height = popul.dyn.death$nb,
+        names.arg = popul.dyn.death$gen, 
+        main = "Population change life table",
+        col = "red",
+        add = TRUE)
+abline(h = 0)
+points(x = bp.out,
+       y = popul.dyn.birth$nb + popul.dyn.death$nb, 
+       type = "l",
+       lwd = 2,
+       pch = 19)
+
+
+# age summary
+
+# make histogram of the maximum age for each individual
+# hist((sort(as.vector(table(df.speed$org.id)))))
+# Make a "capture history"
+ch = table(df.speed$org.id,df.speed$gen)
+# make a datafram ethat records the age of all individuals at all time 
+age.df = NULL
+for (age.ch in 1:ncol(ch)) {
+  sum.up.to.gen = apply(ch[,1:age.ch, drop = FALSE],1,sum)
+  age.df = cbind(age.df,sum.up.to.gen)
+}
+# When an organism is not found, switch it to 0 
+age.df[which(ch==0)]<-0
+
+plot(apply(age.df,2,mean),
+     ylab = "Age",
+     xlab = "Generations",
+     ylim = range(age.df), pch =19)
+lines(apply(age.df,2,mean))
+lines(apply(age.df,2,min))
+lines(apply(age.df,2,max))
+
+par(mfrow = c(1,1))
 
 if (png.plot) {
   dev.off()
 }
+
+# print elapsed time
+endTime <- Sys.time() - startTime # calculate difference
+print(endTime) 
