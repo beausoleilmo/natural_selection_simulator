@@ -10,7 +10,7 @@ startTime = Sys.time()
 # System variables --------------------------------------------------------
 # dev.off()
 # export plots in png? 
-png.plot = FALSE
+png.plot = TRUE
 clean.PNG = TRUE
 make.gif = FALSE 
 ssleep = 0.0
@@ -148,7 +148,7 @@ for (no.gen in 1:nb.gen) {
   # max.run = 4 # Number of frames-1 in which the bacteria can SEARCH for food items 
   sum.energy=sum(energ.val)
   
-  if(reset_food){
+  if(reset_food & no.gen>1){
     # Generate position of food items 
     food.x = runif(n.food, 0, maxrange) 
     food.y = runif(n.food, 0, maxrange)
