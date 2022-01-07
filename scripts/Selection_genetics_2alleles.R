@@ -4,7 +4,10 @@
 # see also https://www.apsnet.org/edcenter/disimpactmngmnt/topc/PopGenetics/Pages/NaturalSelection.aspx 
 
 # This is a more general solution to what is found in Futuyma 
-selection.cal <- function(p=.5, s=0, h = .5, t = 2*.5 
+selection.cal <- function(p = .5, # frequency of p allele 
+                          s = 0,  # Selection coefficient for homozygote 1 
+                          h = .5, # Selection coefficient for heterozygote 
+                          t = 2*.5 # Selection coefficient for homozygote 2 
 ) {
   q = 1-p
   p2 = p^2
@@ -41,15 +44,14 @@ selection.cal <- function(p=.5, s=0, h = .5, t = 2*.5
 
 
 draw.selection <- function(generations = 200, 
-                           p=.5, 
+                           p = .5, 
                            s = 0, 
                            h = .05, 
                            t = .1, 
                            add = FALSE, 
                            # dom = "no",
+                           title = "Allele frequency change through generations",
                            show.p = TRUE) {
-  generations = generations
-  p=p
   show.var = ifelse(show.p,"Frequency of p","Frequency of q")
   evo.mat = matrix(NA,
                    ncol = 2,
@@ -70,6 +72,7 @@ draw.selection <- function(generations = 200,
   
   if (!add) {
     plot(y.val~evo.mat[,2], type = "l",
+         main = title,
          ylim = c(0,1),
          xlab = "Generations",
          ylab = show.var)    
@@ -95,13 +98,16 @@ draw.selection(p = 0.001, s = .1, h = 0, t = .2, show.p = F)
 draw.selection(p = 0.35, s = .1, h = 0, t = .2, show.p = F, add = T)
 draw.selection(p = 0.999, s = .1, h = 0, t = .2, show.p = F, add = T)
 
+
+# See figure 5.19 in Futuyma
+
 # Positive 
 # Evolution "towards" fixation 
 for (i in seq(0.,1,length.out = 25)) {
   if (i==0) {
     add = FALSE
   } else {add = TRUE}
-  draw.selection(p = i, s = 0, h = 0.05, t = .1, show.p = F, add = add)
+  draw.selection(p = i, s = 0, h = 0.05, t = .1, show.p = F, add = add, title = "Positive selection")
 }
 
 # Overdominance 
@@ -110,7 +116,7 @@ for (i in seq(0.,1,length.out = 25)) {
   if (i==0) {
     add = FALSE
   } else {add = TRUE}
-  draw.selection(p = i, s = -.1, h = 0, t = -.2, show.p = F, add = add)
+  draw.selection(p = i, s = -.1, h = 0, t = -.2, show.p = F, add = add, title = "Overdominance")
 }
 
 # Underdominance 
@@ -119,7 +125,7 @@ for (i in seq(0.,1,length.out = 25)) {
   if (i==0) {
     add = FALSE
   } else {add = TRUE}
-  draw.selection(p = i, s = .1, h = 0, t = .2, show.p = F, add = add)
+  draw.selection(p = i, s = .1, h = 0, t = .2, show.p = F, add = add, title = "Underdominance")
 }
 
 
