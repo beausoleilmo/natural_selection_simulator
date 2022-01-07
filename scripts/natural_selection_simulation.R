@@ -10,10 +10,10 @@ startTime = Sys.time()
 # System variables --------------------------------------------------------
 # dev.off()
 # export plots in png? 
-png.plot = TRUE
+png.plot = FALSE
 clean.PNG = TRUE
 make.gif = FALSE 
-ssleep = 0.0
+ssleep = 0.2
 # set.seed(12345)
 
 source("scripts/0.initialize.R")
@@ -83,7 +83,7 @@ add.circles(pos.bac,radius = radius)
 mean.speed.random = 7
 mut.strength = .5
 # Number of iterations (generations) total
-nb.gen = 100
+nb.gen = 10
 
 speed.max.sp = abs(rnorm(n.sp, 
                          mean = mean.speed.random, 
