@@ -42,6 +42,11 @@ if (!fold.exists) {
   dir.create("outns")
 }
 
+fold.exists = file.exists("output")
+if (!fold.exists) {
+  dir.create("output/images",recursive = T)
+}
+
 
 if(clean.PNG){
   #Define the file name that will be deleted

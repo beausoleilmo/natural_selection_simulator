@@ -9,6 +9,8 @@
 # Reference : 
 # Futuyma p. 171 figure 7.5
 #### ### ### ## #### ### ### ## #### ### ### ## 
+png = TRUE
+# set.seed(12345)
 
 # Generate coalescence ----------------------------------------------------
 # Maximum population size 
@@ -73,6 +75,10 @@ coalescence
 # Make a plot with the genes in all generations 
 gene.seq = 1:n.genes
 y = 1:(ncol(coalescence)-1)
+
+if(png){
+  png("output/images/coalescence.simulation.png",width = 7,height = 5,res = 300,units = "in")
+}
 # Make empty plot 
 plot(NA,type = "n",
      ylab = "Generations",
@@ -85,6 +91,7 @@ for (j in 2:ncol(coalescence)) {
   tmp = rep(coalescence$gene,coalescence[,j])
   df.tmp = data.frame(tmp,id = 1:n.genes)
   newdat = rbind(newdat,tmp)
+  # Add all genes id in the plot 
   text(gene.seq,y = j-1,tmp,col = as.numeric(factor(tmp,levels = LETTERS[1:n.genes]))+1)
   newdat[nrow(newdat)-1,]
   newdat[nrow(newdat),]
@@ -106,7 +113,10 @@ for (z in 1:n.genes) {
     # Reorder the genes 
     ddd[1,] = sort(ddd[1,])
     
-    text(x = unique(ddd[1,][duplicated(ddd[1,])]),y = k,labels = check.gene,font =2)
+    # Bold font the coalescent events
+    text(x = unique(ddd[1,][duplicated(ddd[1,])]),y = k,
+         labels = check.gene, font =2)
+    
     # Draw the segment from generation 1 to generation 2 
     segments(x0 = ddd[1,],
              y0 = k,
@@ -115,3 +125,6 @@ for (z in 1:n.genes) {
              col = z+1) # colour based on the iteration number (the gene)
   } # End of k
 } # End of z
+if(png){
+  dev.off()
+}
