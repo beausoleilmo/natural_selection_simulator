@@ -12,6 +12,7 @@
 # Reference : 
 #### ### ### ## #### ### ### ## #### ### ### ## 
 
+dir.create("output/images", recursive = TRUE)
 
 pdf("output/images/test_fitland.pdf", 
     height = 5,width = 5)
@@ -321,7 +322,10 @@ mean = 0
 #   1/sqrt(2*var9^2*1)*exp(-((x-mean9)^2/(2*var1^2))) *
 #     1/sqrt(2*var10^2*1)*exp(-((y-mean10)^2/(2*var2^2))) }
 vec = rep(1,10)
-for(i in 1:10){
+png(filename = "output/images/fit.land.example.png",
+    width = 10,height = 6,units = "in", res = 300, pointsize = 12, bg = "white")
+set.seed(1214)
+for(i in 2){
 norm <- function(x,y, 
                  mean1 = rnorm(1,vec[i],2), var1 =1.5,
                  mean2 = rnorm(1,vec[i],2), var2 =1.5,
@@ -351,9 +355,27 @@ z[is.na(z)] <- 1
 # material3d(col = "black")
 # persp3d(x, y, z, aspect = c(1, 1, 0.5), col = color, contour = TRUE, #scale = FALSE, # front="line",
 #         xlab = "Trait 1", ylab = "Trait 2", zlab = "Fitness",  ticktype="detailed",box=TRUE, axes=TRUE)
-persp(x, y, z, col = color, 
-      xlab = "Trait 2", 
-      ylab = "Trait 1", zlab = "Fitness", 
+
+# Create a function interpolating colors in the range of specified colors
+flame.colors <- colorRampPalette( c("yellow", "red") )
+# Generate the desired number of colors from this palette
+nbcol <- 100
+color <- flame.colors(nbcol)
+nrz <- nrow(z)
+ncz <- ncol(z)
+# Compute the z-value at the facet centres
+zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
+# Recode facet z-values into color indices
+facetcol <- cut(zfacet, nbcol)
+
+par(mfrow = c(1,2), mar = c(3,4,1,1))
+cex.labs = 2
+p1 = persp(x, y, z, 
+           col = color[facetcol],
+           # col = color, 
+      xlab = "",#"Trait 2", 
+      ylab = "",#"Trait 1", 
+      zlab = "",#"Fitness", 
       theta = 60,
       phi = 15,d = 10,
       border = border,
@@ -361,8 +383,31 @@ persp(x, y, z, col = color,
       zlim=c(0,1))
 # persp3D(x, y, z, aspect = c(1, 1, 0.5), col = color, contour = FALSE, scale = FALSE, # front="line",
 #         xlab = "Trait 1", ylab = "Trait 2", zlab = "Fitness",  ticktype="detailed",box=FALSE, axes=TRUE)
+labels <- c('Trait 2')
+x.axis = mean(x) 
+min.x <- min(x) 
+max.x <- max(x) 
+y.axis <- mean(z)
+min.y <- min(y) 
+max.y <- max(y) 
+z.axis <- seq(-100, 100, by=25)
+min.z <- min(z) 
+max.z <- max(z) 
+
+label.pos <- trans3d(x = x.axis-4, y = (min.y - 4.0), z = min.z, pmat = p1)
+text(label.pos$x, label.pos$y, labels=c('Trait 2'), adj=c(0, NA), srt=330, cex=cex.labs)
+label.pos <- trans3d(x = (min.x+ 26.0), y = (y.axis -8.5), z = min.z, pmat = p1)
+text(label.pos$x, label.pos$y, labels=c('Trait 1'), adj=c(0, NA), srt=14, cex=cex.labs)
+
+label.pos <- trans3d(x = x.axis-55, y = y.axis+10, z = min.z, pmat = p1)
+text(label.pos$x, label.pos$y, labels=c('Fitness'), adj=c(0, NA), srt=270, cex=cex.labs)
+
 }
 
+# par(mfrow = c(1,1), mar = c(4,4,1,1))
+image(x,y,z, xlab = "", ylab = "", xaxt = "n", yaxt = "n")
+title(xlab = "Trait 1", ylab = "Trait 2", line = 1, cex.lab = cex.labs)
+dev.off()
 
 
 
