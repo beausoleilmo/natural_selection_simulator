@@ -368,7 +368,7 @@ zfacet <- z[-1, -1] + z[-1, -ncz] + z[-nrz, -1] + z[-nrz, -ncz]
 # Recode facet z-values into color indices
 facetcol <- cut(zfacet, nbcol)
 
-par(mfrow = c(1,2), mar = c(3,4,1,1))
+par(mfrow = c(1,2), mar = c(3,3,1,1))
 cex.labs = 2
 p1 = persp(x, y, z, 
            col = color[facetcol],
@@ -399,14 +399,14 @@ text(label.pos$x, label.pos$y, labels=c('Trait 2'), adj=c(0, NA), srt=330, cex=c
 label.pos <- trans3d(x = (min.x+ 26.0), y = (y.axis -8.5), z = min.z, pmat = p1)
 text(label.pos$x, label.pos$y, labels=c('Trait 1'), adj=c(0, NA), srt=14, cex=cex.labs)
 
-label.pos <- trans3d(x = x.axis-55, y = y.axis+10, z = min.z, pmat = p1)
+label.pos <- trans3d(x = x.axis-55, y = y.axis+15, z = min.z+.1, pmat = p1)
 text(label.pos$x, label.pos$y, labels=c('Fitness'), adj=c(0, NA), srt=270, cex=cex.labs)
 
 }
 
 # par(mfrow = c(1,1), mar = c(4,4,1,1))
 image(x,y,z, xlab = "", ylab = "", xaxt = "n", yaxt = "n")
-title(xlab = "Trait 1", ylab = "Trait 2", line = 1, cex.lab = cex.labs)
+title(xlab = "Trait 2", ylab = "Trait 1", line = 1, cex.lab = cex.labs)
 dev.off()
 
 
