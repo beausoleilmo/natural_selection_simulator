@@ -409,7 +409,10 @@ image(x,y,z, xlab = "", ylab = "", xaxt = "n", yaxt = "n")
 title(xlab = "Trait 2", ylab = "Trait 1", line = 1, cex.lab = cex.labs)
 dev.off()
 
-
+# add random image
+x = seq(-2*pi,2*pi, by = .1)
+image(outer(X = sin((((x+1.5))))/2+5,
+            Y = sin((((x+1.5))))/2+5))
 
 vec = 1:100
 for(i in 1){
