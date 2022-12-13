@@ -132,7 +132,15 @@ persp(x, y, z, col = color,
 # Library
 library(plotly)
 # Plot
+# axx <- list(nticks = 4,range = c(-25,75))
+# axy <- list(nticks = 4,range = c(-25,75))
+axz <- list(nticks = 4,range = c(0,.3))
+
 p <- plot_ly(z = z, type = "surface")
+p <- p %>% layout(scene = list(zaxis=axz,
+                               camera = list(up = list(x=0, y=0, z=3.25),
+                                             center = list(x=0, y=0, z=0),
+                                             eye = list(x = -2.00, y = -2.00, z = 1.25))))
 p 
 # save the widget
 # library(htmlwidgets)

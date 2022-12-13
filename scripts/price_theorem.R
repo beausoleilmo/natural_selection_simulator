@@ -2,13 +2,13 @@
 
 # ∆E_{i element of I} = Cov_{i element of I}(w_iz_i)+E_{i element of I}(w_i∆z_i)
 
-price.theorem <- function(iter = 100, 
-                          n = 100, 
-                          n.off = 100,
-                          beta1 = 0,
-                          mean.p = 10, 
-                          mean.o = 0, # 
-                          max.off = 10, 
+price.theorem <- function(iter = 100, # Number of replicates 
+                          n = 100, # number of parents 
+                          n.off = 100, # number of offspring
+                          beta1 = 0, # Slope for the association of fitness and phenotype 
+                          mean.p = 10, # mean phenotype of parents 
+                          mean.o = 0, # expected amount ADDED to the phenotypes of the parents 
+                          max.off = 10, # maximum number of offsprings (so if 10, offspring can be between 0 and 10)
                           sd.p = 1, sd.o = 1,
                           plothist = TRUE, seed = NULL) {
   if (!is.null(seed)) {
@@ -93,10 +93,11 @@ price.theorem <- function(iter = 100,
              transmission = rec.transm,
              pop.df = pop.df)) 
 }
+# Run the function 
 out.price = price.theorem(iter = 500, 
                           n = 100, beta1 = .50, 
                           mean.p = 10, mean.o = 0, 
-                          max.off = 2,
+                          max.off = 30,
                           sd.p = 1, sd.o = 1, seed = NULL)
 round(out.price$selection[1:10],2)
 round(out.price$transmission[1:10],2)
