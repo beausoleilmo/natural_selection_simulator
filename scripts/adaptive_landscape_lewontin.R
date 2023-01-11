@@ -83,7 +83,11 @@ for (i in seq(1,length(seq.x),by = by.text)) {
 contour(new.space,ylim=c(1,0),add = T, nlevels = 50)
 
 dim.mat = dim(new.space)
-# set.seed(1234)
+# set.seed(1236)
+# set.seed(1239)
+# set.seed(1240)
+# set.seed(1241)
+set.seed(1246)
 x1 = sample(x = 1:dim.mat[1], size = 1) # 90
 x2 = sample(x = 1:dim.mat[2], size = 1) # 90
 new.space[x1,x2]
