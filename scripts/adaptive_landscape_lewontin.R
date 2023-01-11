@@ -90,6 +90,14 @@ dim.mat = dim(new.space)
 set.seed(1246)
 x1 = sample(x = 1:dim.mat[1], size = 1) # 90
 x2 = sample(x = 1:dim.mat[2], size = 1) # 90
+x1 = which(round(seq.x,2)==.05)
+x2 = which(round(seq.x,2)==.05)
+# x1 = which(round(seq.x,2)==.90)
+# x2 = which(round(seq.x,2)==.02)
+# x1 = which(round(seq.x,2)==.90)
+# x2 = which(round(seq.x,2)==.2)
+# x1 = which(round(seq.x,2)==.3)
+# x2 = which(round(seq.x,2)==.90)
 new.space[x1,x2]
 
 # Circle method 
@@ -249,3 +257,35 @@ r <-raster(
 
 # Draw the adaptive landscape
 raster2quiver(rast = r, aggregate = 2, colours = tim.colors(100)) 
+x1 = which(round(seq.x,2)==.05)
+x2 = which(round(seq.x,2)==.05)
+# x1 = which(round(seq.x,2)==.90)
+# x2 = which(round(seq.x,2)==.02)
+# x1 = which(round(seq.x,2)==.90)
+# x2 = which(round(seq.x,2)==.2)
+# x1 = which(round(seq.x,2)==.3)
+# x2 = which(round(seq.x,2)==.90)
+new.space[x1,x2]
+
+# Circle method 
+
+for (i in 1:100) {
+  print(i)
+  
+  if (i==1) {
+    points(seq.x[x1],seq.x[x2], pch =19, col = "red")
+    circl.dat = circle(seq.x[x1],seq.x[x2],.01)
+  } else {
+    circl.dat = circle(x1,x2,.01)
+  }
+  circl.dat$fit = rep(NA,length(circl.dat$x))
+  # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
+  for (k in 1:length(circl.dat$x)) {
+    # Calculate mean fitness 
+    circl.dat$fit[k] = all.p(1-circl.dat$y[k]) %*% geno.fit %*% all.p(1-circl.dat$x[k])
+  }
+  x1 = circl.dat$x[which.max(circl.dat$fit)]
+  x2 = circl.dat$y[which.max(circl.dat$fit)]
+  points(circl.dat$x,circl.dat$y,cex = -log(circl.dat$fit/max(circl.dat$fit))*12)
+  points(x1, x2, col = "green", pch = 19)
+}
