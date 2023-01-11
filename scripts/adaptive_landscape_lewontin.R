@@ -13,7 +13,7 @@ geno.fit = matrix(c(0.791,1.000,0.834,
                   ncol = 3,
                   byrow = T)
 # Resolution 
-res = 0.01
+res = 0.001
 # Sequence of X 
 seq.x = seq(0,1,by = res)
 # Make a matrix 
@@ -31,10 +31,10 @@ all.p <- function(p) { # Takes frequency of an allele in the population
     return((geno.df))
   } else {
     p2 = p^2 # Gets the AA 
-  pq2 = 2*p*(1-p) # gets the Aa
-  q2 = (1-p)^2 # Gets the aa 
-  return(list=c(p2 = p2, pq2 = pq2, q2 = q2 # Return the values 
-  )) 
+    pq2 = 2*p*(1-p) # gets the Aa
+    q2 = (1-p)^2 # Gets the aa 
+    return(list=c(p2 = p2, pq2 = pq2, q2 = q2 # Return the values 
+    )) 
   }
 }
 
@@ -65,6 +65,7 @@ round(t(space),3)
 # Transform the space
 new.space = t(space)
 image.plot(new.space, 
+           ylim = rev(c(0,1)),
            # ylim=c( 1.01,-0.01), 
            ylab= "Percentage of Chromosome EF of TD (Tidbinbilla) form",
            xlab= "Percentage of Chromosome CD of BL (Blundell) form")
@@ -81,14 +82,76 @@ for (i in seq(1,length(seq.x),by = by.text)) {
 # Add contour lines 
 contour(new.space,ylim=c(1,0),add = T, nlevels = 50)
 
+dim.mat = dim(new.space)
+set.seed(1234)
+x1 = sample(x = 1:dim.mat[1], size = 1)
+x2 = sample(x = 1:dim.mat[2], size = 1)
+new.space[x1,x2]
+
+for (i in 1:100) {
+points(seq.x[x1],seq.x[x2], pch =19, col = "red")
+# Fitness at that location 
+new.space[x1,x2]
+seq.x[c(x1+1,x2)]
+right.pt = c(x1+1,x2)
+left.pt = c(x1-1, x2)
+bottom.pt = c(x1, x2+1)
+top.pt = c(x1, x2-1)
+dright.pt = c(x1+1, x2+1)
+dleft.pt = c(x1-1, x2-1)
+dbottom.pt = c(x1-1, x2+1)
+dtop.pt = c(x1+1, x2-1)
+
+new.space[x1,x2]
+# all.pos=rbind(top.pt,bottom.pt,right.pt,left.pt,dright.pt,dleft.pt,dbottom.pt,dtop.pt)
+
+pos.move = matrix(c(seq.x[top.pt[1]], seq.x[top.pt[2]],
+         seq.x[bottom.pt[1]], seq.x[bottom.pt[2]],
+         seq.x[right.pt[1]], seq.x[right.pt[2]],
+         seq.x[left.pt[1]], seq.x[left.pt[2]],
+         seq.x[dright.pt[1]], seq.x[dright.pt[2]],
+         seq.x[dleft.pt[1]], seq.x[dleft.pt[2]],
+         seq.x[dbottom.pt[1]], seq.x[dbottom.pt[2]],
+         seq.x[dtop.pt[1]], seq.x[dtop.pt[2]]), nrow = 8, byrow = TRUE)
+pos.move.coord = matrix(c(top.pt[1], top.pt[2],
+                    bottom.pt[1], bottom.pt[2],
+                    right.pt[1], right.pt[2],
+                    left.pt[1], left.pt[2],
+                    dright.pt[1], dright.pt[2],
+                    dleft.pt[1], dleft.pt[2],
+                    dbottom.pt[1], dbottom.pt[2],
+                    dtop.pt[1], dtop.pt[2]), nrow = 8, byrow = TRUE)
+
+dim.test = apply(pos.move.coord, 2, max)
+if (dim.mat[1] <dim.test[1] | dim.mat[2] <dim.test[2]) {
+stop()  
+}
+fit.val.near = c(new.space[right.pt[1], right.pt[2]],
+                 new.space[left.pt[1], left.pt[2]],
+                 new.space[bottom.pt[1], bottom.pt[2]],
+                 new.space[top.pt[1], top.pt[2]],
+                 new.space[dright.pt[1], dright.pt[2]],
+                 new.space[dleft.pt[1], dleft.pt[2]],
+                 new.space[dbottom.pt[1], dbottom.pt[2]],
+                 new.space[dtop.pt[1], dtop.pt[2]])
+
+
+# points(pos.move)
+pos.move[which.max(fit.val.near),]
+
+x1 = pos.move.coord[which.max(fit.val.near),1]
+x2 = pos.move.coord[which.max(fit.val.near),2]
+}
 # Plotly 3D graph  --------------------------------------------------------
 # To get the 3D plane in an INTERACTIVE graph 
 xyz=cbind(expand.grid(seq.x,
                       seq.x),
           as.vector(new.space))
 
-plot_ly(x = xyz[,1],y = xyz[,2],z = xyz[,3],
-        color = xyz[,3])
+plot_ly(x = rev(xyz[,1]),y = xyz[,2],z = xyz[,3],
+        color = xyz[,3], type = "scatter3d", mode = "markers") %>% 
+  layout(yaxis  = list(range = c(1, 0), autorange = F, autorange="reversed"),showlegend = F)
+
 
 
 # Vector field on the Adaptive landscape ----------------------------------
