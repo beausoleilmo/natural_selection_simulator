@@ -1,0 +1,129 @@
+
+# Source https://stackoverflow.com/questions/71547573/draw-a-vector-field-from-matrix-multiplication-r 
+
+library(fields) # for image.plot 
+library(plotly)
+library(raster)
+
+# Genotype fitness matrix -------------------------------------------------
+geno.fit = matrix(c(0.791,1.000,0.834,
+                    0.670,1.006,0.901,
+                    0.657,0.657,1.067), 
+                  nrow = 3, 
+                  ncol = 3,
+                  byrow = T)
+# Resolution 
+res = 0.01
+# Sequence of X 
+seq.x = seq(0,1,by = res)
+# Make a matrix 
+space = outer(seq.x,seq.x,"*") 
+
+# Function to calculate the AVERAGE fitness for a given frequency of an allele to get the expected frequency of genotypes in a population
+all.p <- function(p) { # Takes frequency of an allele in the population 
+  
+  if (length(p)>1) { # Has to be only 1 number 
+    q = 1-p
+    p2 = p^2
+    pq2 = p*q*2
+    q2 = q^2
+    geno.df = data.frame(p2, pq2,q2)
+    return((geno.df))
+  } else {
+    p2 = p^2 # Gets the AA 
+  pq2 = 2*p*(1-p) # gets the Aa
+  q2 = (1-p)^2 # Gets the aa 
+  return(list=c(p2 = p2, pq2 = pq2, q2 = q2 # Return the values 
+  )) 
+  }
+}
+
+# Examples 
+all.p(0)
+all.p(1)
+all.p(.5)
+all.p(seq(0,1, by =.1))
+
+# Plot the matrix of all combinations of genotype frequencies
+image.plot(space,
+           ylim=c(1.05,-0.05), 
+           ylab= "Percentage of Chromosome EF of TD form",
+           xlab= "Percentage of Chromosome CD of BL form")
+# Backup the data 
+space2 = space
+
+# calculate the average fitness for EVERY combination of frequency of 2 genotypes 
+for (i in 1:length(seq.x)) {
+  for (j in 1:length(seq.x)) {
+    # Calculate mean fitness 
+    space[i,j] = all.p(1-seq.x[i]) %*% geno.fit %*% all.p(1-seq.x[j])
+  }
+}
+# Show the result 
+round(t(space),3)
+
+# Transform the space
+new.space = t(space)
+image.plot(new.space, 
+           # ylim=c( 1.01,-0.01), 
+           ylab= "Percentage of Chromosome EF of TD (Tidbinbilla) form",
+           xlab= "Percentage of Chromosome CD of BL (Blundell) form")
+# Add the numbers to get a better sense of the average fitness values at each point 
+by.text = 8
+for (i in seq(1,length(seq.x),by = by.text)) {
+  for (j in seq(1,length(seq.x),by = by.text)) {
+    text(seq.x[i],seq.x[j],
+         labels = round(new.space[i,j],4),
+         cex = new.space[i,j]/2, 
+         col = "black") # col = "gray70"
+  }
+}
+# Add contour lines 
+contour(new.space,ylim=c(1,0),add = T, nlevels = 50)
+
+# Plotly 3D graph  --------------------------------------------------------
+# To get the 3D plane in an INTERACTIVE graph 
+xyz=cbind(expand.grid(seq.x,
+                      seq.x),
+          as.vector(new.space))
+
+plot_ly(x = xyz[,1],y = xyz[,2],z = xyz[,3],
+        color = xyz[,3])
+
+
+# Vector field on the Adaptive landscape ----------------------------------
+library(tidyverse)
+library(ggquiver)
+raster2quiver <- function(rast, aggregate = 50, colours = terrain.colors(6), contour.breaks = 200)
+{
+  names(rast) <- "z"
+  quiv <- aggregate(rast, aggregate)
+  terr <- terrain(quiv, opt = c('slope', 'aspect'))
+  quiv$u <- -terr$slope[] * sin(terr$aspect[])
+  quiv$v <- -terr$slope[] * cos(terr$aspect[])
+  quiv_df <- as.data.frame(quiv, xy = TRUE)
+  rast_df <- as.data.frame(rast, xy = TRUE)
+  
+  print(ggplot(mapping = aes(x = x, y = y, fill = z)) + 
+          geom_raster(data = rast_df, na.rm = TRUE) + 
+          geom_contour(data = rast_df, 
+                       aes(z=z, color=..level..),
+                       breaks = seq(0,3, length.out = contour.breaks), 
+                       size = 1.4)+
+          scale_color_gradient(low="blue", high="red")+
+          geom_quiver(data = quiv_df, aes(u = u, v = v), vecsize = 1.5) +
+          scale_fill_gradientn(colours = colours, na.value = "transparent") +
+          theme_bw())
+  
+  return(quiv_df)
+}
+
+r <-raster(
+  space,
+  xmn=range(seq.x)[1], xmx=range(seq.x)[2],
+  ymn=range(seq.x)[1], ymx=range(seq.x)[2],
+  crs=CRS("+proj=utm +zone=11 +datum=NAD83")
+)
+
+# Draw the adaptive landscape
+raster2quiver(rast = r, aggregate = 2, colours = tim.colors(100)) 
