@@ -13,7 +13,7 @@ geno.fit = matrix(c(0.791,1.000,0.834,
                   ncol = 3,
                   byrow = T)
 # Resolution 
-res = 0.001
+res = 0.01
 # Sequence of X 
 seq.x = seq(0,1,by = res)
 # Make a matrix 
@@ -83,65 +83,120 @@ for (i in seq(1,length(seq.x),by = by.text)) {
 contour(new.space,ylim=c(1,0),add = T, nlevels = 50)
 
 dim.mat = dim(new.space)
-set.seed(1234)
-x1 = sample(x = 1:dim.mat[1], size = 1)
-x2 = sample(x = 1:dim.mat[2], size = 1)
+# set.seed(1234)
+x1 = sample(x = 1:dim.mat[1], size = 1) # 90
+x2 = sample(x = 1:dim.mat[2], size = 1) # 90
 new.space[x1,x2]
 
+# Circle method 
+
+# library(plotrix) # The function circle comes from this package 
+circle = function (x, y, radius, nv = 100, border = NULL, col = NA, lty = 1, 
+                   density = NULL, angle = 45, lwd = 1) 
+{
+  xylim <- par("usr")
+  plotdim <- par("pin")
+  ymult <- getYmult()
+  angle.inc <- 2 * pi/nv
+  angles <- seq(0, 2 * pi - angle.inc, by = angle.inc)
+  if (length(col) < length(radius)) 
+    col <- rep(col, length.out = length(radius))
+  for (circle in 1:length(radius)) {
+    xv <- cos(angles) * radius[circle] + x
+    yv <- sin(angles) * radius[circle] * ymult + y
+    polygon(xv, yv, border = border, col = col[circle], 
+            lty = lty, density = density, angle = angle, lwd = lwd)
+  }
+  return(list(x = xv, y = yv))
+}
+
+geno.hwe = function(geno.q) {
+  q = sqrt(geno.q)
+  p=1-q
+  p2 = p^2
+  pq2 = 2*p*q
+  q2 = q^2
+  return(list=c(p2 = p2, pq2 = pq2, q2 = q2)) 
+}
+
+i=1
 for (i in 1:100) {
-points(seq.x[x1],seq.x[x2], pch =19, col = "red")
-# Fitness at that location 
-new.space[x1,x2]
-seq.x[c(x1+1,x2)]
-right.pt = c(x1+1,x2)
-left.pt = c(x1-1, x2)
-bottom.pt = c(x1, x2+1)
-top.pt = c(x1, x2-1)
-dright.pt = c(x1+1, x2+1)
-dleft.pt = c(x1-1, x2-1)
-dbottom.pt = c(x1-1, x2+1)
-dtop.pt = c(x1+1, x2-1)
-
-new.space[x1,x2]
-# all.pos=rbind(top.pt,bottom.pt,right.pt,left.pt,dright.pt,dleft.pt,dbottom.pt,dtop.pt)
-
-pos.move = matrix(c(seq.x[top.pt[1]], seq.x[top.pt[2]],
-         seq.x[bottom.pt[1]], seq.x[bottom.pt[2]],
-         seq.x[right.pt[1]], seq.x[right.pt[2]],
-         seq.x[left.pt[1]], seq.x[left.pt[2]],
-         seq.x[dright.pt[1]], seq.x[dright.pt[2]],
-         seq.x[dleft.pt[1]], seq.x[dleft.pt[2]],
-         seq.x[dbottom.pt[1]], seq.x[dbottom.pt[2]],
-         seq.x[dtop.pt[1]], seq.x[dtop.pt[2]]), nrow = 8, byrow = TRUE)
-pos.move.coord = matrix(c(top.pt[1], top.pt[2],
-                    bottom.pt[1], bottom.pt[2],
-                    right.pt[1], right.pt[2],
-                    left.pt[1], left.pt[2],
-                    dright.pt[1], dright.pt[2],
-                    dleft.pt[1], dleft.pt[2],
-                    dbottom.pt[1], dbottom.pt[2],
-                    dtop.pt[1], dtop.pt[2]), nrow = 8, byrow = TRUE)
-
-dim.test = apply(pos.move.coord, 2, max)
-if (dim.mat[1] <dim.test[1] | dim.mat[2] <dim.test[2]) {
-stop()  
+  print(i)
+  
+  if (i==1) {
+    points(seq.x[x1],seq.x[x2], pch =19, col = "red")
+    circl.dat = circle(seq.x[x1],seq.x[x2],.01)
+  } else {
+    circl.dat = circle(x1,x2,.01)
+  }
+  circl.dat$fit = rep(NA,length(circl.dat$x))
+  # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
+  for (k in 1:length(circl.dat$x)) {
+    # Calculate mean fitness 
+    circl.dat$fit[k] = all.p(1-circl.dat$y[k]) %*% geno.fit %*% all.p(1-circl.dat$x[k])
+  }
+  x1 = circl.dat$x[which.max(circl.dat$fit)]
+  x2 = circl.dat$y[which.max(circl.dat$fit)]
+  points(circl.dat$x,circl.dat$y,cex = -log(circl.dat$fit/max(circl.dat$fit))*12)
+  points(x1, x2, col = "green", pch = 19)
 }
-fit.val.near = c(new.space[right.pt[1], right.pt[2]],
-                 new.space[left.pt[1], left.pt[2]],
-                 new.space[bottom.pt[1], bottom.pt[2]],
-                 new.space[top.pt[1], top.pt[2]],
-                 new.space[dright.pt[1], dright.pt[2]],
-                 new.space[dleft.pt[1], dleft.pt[2]],
-                 new.space[dbottom.pt[1], dbottom.pt[2]],
-                 new.space[dtop.pt[1], dtop.pt[2]])
 
+# Square method (NOT OPTIMALLL)
+# for (i in 1:1000) {
+#   points(seq.x[x1],seq.x[x2], pch =19, col = "red")
+#   # Fitness at that location 
+#   new.space[x1,x2]
+#   seq.x[c(x1+1,x2)]
+#   right.pt = c(x1+1,x2)
+#   left.pt = c(x1-1, x2)
+#   bottom.pt = c(x1, x2+1)
+#   top.pt = c(x1, x2-1)
+#   dright.pt = c(x1+1, x2+1)
+#   dleft.pt = c(x1-1, x2-1)
+#   dbottom.pt = c(x1-1, x2+1)
+#   dtop.pt = c(x1+1, x2-1)
+#   
+#   new.space[x1,x2]
+#   # all.pos=rbind(top.pt,bottom.pt,right.pt,left.pt,dright.pt,dleft.pt,dbottom.pt,dtop.pt)
+#   
+#   pos.move = matrix(c(seq.x[top.pt[1]], seq.x[top.pt[2]],
+#                       seq.x[bottom.pt[1]], seq.x[bottom.pt[2]],
+#                       seq.x[right.pt[1]], seq.x[right.pt[2]],
+#                       seq.x[left.pt[1]], seq.x[left.pt[2]],
+#                       seq.x[dright.pt[1]], seq.x[dright.pt[2]],
+#                       seq.x[dleft.pt[1]], seq.x[dleft.pt[2]],
+#                       seq.x[dbottom.pt[1]], seq.x[dbottom.pt[2]],
+#                       seq.x[dtop.pt[1]], seq.x[dtop.pt[2]]), nrow = 8, byrow = TRUE)
+#   pos.move.coord = matrix(c(top.pt[1], top.pt[2],
+#                             bottom.pt[1], bottom.pt[2],
+#                             right.pt[1], right.pt[2],
+#                             left.pt[1], left.pt[2],
+#                             dright.pt[1], dright.pt[2],
+#                             dleft.pt[1], dleft.pt[2],
+#                             dbottom.pt[1], dbottom.pt[2],
+#                             dtop.pt[1], dtop.pt[2]), nrow = 8, byrow = TRUE)
+#   
+#   dim.test = apply(pos.move.coord, 2, max)
+#   if (dim.mat[1] <dim.test[1] | dim.mat[2] <dim.test[2]) {
+#     stop("Bang! I think you just hit the wall!")  
+#   }
+#   fit.val.near = c(new.space[right.pt[1], right.pt[2]],
+#                    new.space[left.pt[1], left.pt[2]],
+#                    new.space[bottom.pt[1], bottom.pt[2]],
+#                    new.space[top.pt[1], top.pt[2]],
+#                    new.space[dright.pt[1], dright.pt[2]],
+#                    new.space[dleft.pt[1], dleft.pt[2]],
+#                    new.space[dbottom.pt[1], dbottom.pt[2]],
+#                    new.space[dtop.pt[1], dtop.pt[2]])
+#   
+#   
+#   # points(pos.move)
+#   pos.move[which.max(fit.val.near),]
+#   
+#   x1 = pos.move.coord[which.max(fit.val.near),1]
+#   x2 = pos.move.coord[which.max(fit.val.near),2]
+# }
 
-# points(pos.move)
-pos.move[which.max(fit.val.near),]
-
-x1 = pos.move.coord[which.max(fit.val.near),1]
-x2 = pos.move.coord[which.max(fit.val.near),2]
-}
 # Plotly 3D graph  --------------------------------------------------------
 # To get the 3D plane in an INTERACTIVE graph 
 xyz=cbind(expand.grid(seq.x,
