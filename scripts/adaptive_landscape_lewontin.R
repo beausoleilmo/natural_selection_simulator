@@ -1,24 +1,18 @@
 
 # Source https://stackoverflow.com/questions/71547573/draw-a-vector-field-from-matrix-multiplication-r 
 
+
+# loading libraries -------------------------------------------------------
 library(fields) # for image.plot 
 library(plotly)
+library(plotrix)
 library(raster)
 
-# Genotype fitness matrix -------------------------------------------------
-geno.fit = matrix(c(0.791,1.000,0.834,
-                    0.670,1.006,0.901,
-                    0.657,0.657,1.067), 
-                  nrow = 3, 
-                  ncol = 3,
-                  byrow = T)
-# Resolution 
-res = 0.01
-# Sequence of X 
-seq.x = seq(0,1,by = res)
-# Make a matrix 
-space = outer(seq.x,seq.x,"*") 
+library(tidyverse)
+library(ggquiver)
 
+
+# Functions ---------------------------------------------------------------
 # Function to calculate the AVERAGE fitness for a given frequency of an allele to get the expected frequency of genotypes in a population
 all.p <- function(p) { # Takes frequency of an allele in the population 
   
@@ -43,64 +37,6 @@ all.p(0)
 all.p(1)
 all.p(.5)
 all.p(seq(0,1, by =.1))
-
-# Plot the matrix of all combinations of genotype frequencies
-image.plot(space,
-           ylim=c(1.05,-0.05), 
-           ylab= "Percentage of Chromosome EF of TD form",
-           xlab= "Percentage of Chromosome CD of BL form")
-# Backup the data 
-space2 = space
-
-# calculate the average fitness for EVERY combination of frequency of 2 genotypes 
-for (i in 1:length(seq.x)) {
-  for (j in 1:length(seq.x)) {
-    # Calculate mean fitness 
-    space[i,j] = all.p(1-seq.x[i]) %*% geno.fit %*% all.p(1-seq.x[j])
-  }
-}
-# Show the result 
-round(t(space),3)
-
-# Transform the space
-new.space = t(space)
-image.plot(new.space, 
-           ylim = rev(c(0,1)),
-           # ylim=c( 1.01,-0.01), 
-           ylab= "Percentage of Chromosome EF of TD (Tidbinbilla) form",
-           xlab= "Percentage of Chromosome CD of BL (Blundell) form")
-# Add the numbers to get a better sense of the average fitness values at each point 
-by.text = 8
-for (i in seq(1,length(seq.x),by = by.text)) {
-  for (j in seq(1,length(seq.x),by = by.text)) {
-    text(seq.x[i],seq.x[j],
-         labels = round(new.space[i,j],4),
-         cex = new.space[i,j]/2, 
-         col = "black") # col = "gray70"
-  }
-}
-# Add contour lines 
-contour(new.space,ylim=c(1,0),add = T, nlevels = 50)
-
-dim.mat = dim(new.space)
-# set.seed(1236)
-# set.seed(1239)
-# set.seed(1240)
-# set.seed(1241)
-set.seed(1246)
-x1 = sample(x = 1:dim.mat[1], size = 1) # 90
-x2 = sample(x = 1:dim.mat[2], size = 1) # 90
-x1 = which(round(seq.x,2)==.05)
-x2 = which(round(seq.x,2)==.05)
-# x1 = which(round(seq.x,2)==.90)
-# x2 = which(round(seq.x,2)==.02)
-# x1 = which(round(seq.x,2)==.90)
-# x2 = which(round(seq.x,2)==.2)
-# x1 = which(round(seq.x,2)==.3)
-# x2 = which(round(seq.x,2)==.90)
-new.space[x1,x2]
-
-# Circle method 
 
 # library(plotrix) # The function circle comes from this package 
 circle = function (x, y, radius, nv = 100, border = NULL, col = NA, lty = 1, 
@@ -131,99 +67,6 @@ geno.hwe = function(geno.q) {
   return(list=c(p2 = p2, pq2 = pq2, q2 = q2)) 
 }
 
-i=1
-for (i in 1:100) {
-  print(i)
-  
-  if (i==1) {
-    points(seq.x[x1],seq.x[x2], pch =19, col = "red")
-    circl.dat = circle(seq.x[x1],seq.x[x2],.01)
-  } else {
-    circl.dat = circle(x1,x2,.01)
-  }
-  circl.dat$fit = rep(NA,length(circl.dat$x))
-  # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
-  for (k in 1:length(circl.dat$x)) {
-    # Calculate mean fitness 
-    circl.dat$fit[k] = all.p(1-circl.dat$y[k]) %*% geno.fit %*% all.p(1-circl.dat$x[k])
-  }
-  x1 = circl.dat$x[which.max(circl.dat$fit)]
-  x2 = circl.dat$y[which.max(circl.dat$fit)]
-  points(circl.dat$x,circl.dat$y,cex = -log(circl.dat$fit/max(circl.dat$fit))*12)
-  points(x1, x2, col = "green", pch = 19)
-}
-
-# Square method (NOT OPTIMALLL)
-# for (i in 1:1000) {
-#   points(seq.x[x1],seq.x[x2], pch =19, col = "red")
-#   # Fitness at that location 
-#   new.space[x1,x2]
-#   seq.x[c(x1+1,x2)]
-#   right.pt = c(x1+1,x2)
-#   left.pt = c(x1-1, x2)
-#   bottom.pt = c(x1, x2+1)
-#   top.pt = c(x1, x2-1)
-#   dright.pt = c(x1+1, x2+1)
-#   dleft.pt = c(x1-1, x2-1)
-#   dbottom.pt = c(x1-1, x2+1)
-#   dtop.pt = c(x1+1, x2-1)
-#   
-#   new.space[x1,x2]
-#   # all.pos=rbind(top.pt,bottom.pt,right.pt,left.pt,dright.pt,dleft.pt,dbottom.pt,dtop.pt)
-#   
-#   pos.move = matrix(c(seq.x[top.pt[1]], seq.x[top.pt[2]],
-#                       seq.x[bottom.pt[1]], seq.x[bottom.pt[2]],
-#                       seq.x[right.pt[1]], seq.x[right.pt[2]],
-#                       seq.x[left.pt[1]], seq.x[left.pt[2]],
-#                       seq.x[dright.pt[1]], seq.x[dright.pt[2]],
-#                       seq.x[dleft.pt[1]], seq.x[dleft.pt[2]],
-#                       seq.x[dbottom.pt[1]], seq.x[dbottom.pt[2]],
-#                       seq.x[dtop.pt[1]], seq.x[dtop.pt[2]]), nrow = 8, byrow = TRUE)
-#   pos.move.coord = matrix(c(top.pt[1], top.pt[2],
-#                             bottom.pt[1], bottom.pt[2],
-#                             right.pt[1], right.pt[2],
-#                             left.pt[1], left.pt[2],
-#                             dright.pt[1], dright.pt[2],
-#                             dleft.pt[1], dleft.pt[2],
-#                             dbottom.pt[1], dbottom.pt[2],
-#                             dtop.pt[1], dtop.pt[2]), nrow = 8, byrow = TRUE)
-#   
-#   dim.test = apply(pos.move.coord, 2, max)
-#   if (dim.mat[1] <dim.test[1] | dim.mat[2] <dim.test[2]) {
-#     stop("Bang! I think you just hit the wall!")  
-#   }
-#   fit.val.near = c(new.space[right.pt[1], right.pt[2]],
-#                    new.space[left.pt[1], left.pt[2]],
-#                    new.space[bottom.pt[1], bottom.pt[2]],
-#                    new.space[top.pt[1], top.pt[2]],
-#                    new.space[dright.pt[1], dright.pt[2]],
-#                    new.space[dleft.pt[1], dleft.pt[2]],
-#                    new.space[dbottom.pt[1], dbottom.pt[2]],
-#                    new.space[dtop.pt[1], dtop.pt[2]])
-#   
-#   
-#   # points(pos.move)
-#   pos.move[which.max(fit.val.near),]
-#   
-#   x1 = pos.move.coord[which.max(fit.val.near),1]
-#   x2 = pos.move.coord[which.max(fit.val.near),2]
-# }
-
-# Plotly 3D graph  --------------------------------------------------------
-# To get the 3D plane in an INTERACTIVE graph 
-xyz=cbind(expand.grid(seq.x,
-                      seq.x),
-          as.vector(new.space))
-
-plot_ly(x = rev(xyz[,1]),y = xyz[,2],z = xyz[,3],
-        color = xyz[,3], type = "scatter3d", mode = "markers") %>% 
-  layout(yaxis  = list(range = c(1, 0), autorange = F, autorange="reversed"),showlegend = F)
-
-
-
-# Vector field on the Adaptive landscape ----------------------------------
-library(tidyverse)
-library(ggquiver)
 raster2quiver <- function(rast, aggregate = 50, colours = terrain.colors(6), contour.breaks = 200)
 {
   names(rast) <- "z"
@@ -248,44 +91,166 @@ raster2quiver <- function(rast, aggregate = 50, colours = terrain.colors(6), con
   return(quiv_df)
 }
 
-r <-raster(
-  space,
-  xmn=range(seq.x)[1], xmx=range(seq.x)[2],
-  ymn=range(seq.x)[1], ymx=range(seq.x)[2],
-  crs=CRS("+proj=utm +zone=11 +datum=NAD83")
-)
 
-# Draw the adaptive landscape
-raster2quiver(rast = r, aggregate = 2, colours = tim.colors(100)) 
-x1 = which(round(seq.x,2)==.05)
-x2 = which(round(seq.x,2)==.05)
-# x1 = which(round(seq.x,2)==.90)
-# x2 = which(round(seq.x,2)==.02)
-# x1 = which(round(seq.x,2)==.90)
-# x2 = which(round(seq.x,2)==.2)
-# x1 = which(round(seq.x,2)==.3)
-# x2 = which(round(seq.x,2)==.90)
-new.space[x1,x2]
-
-# Circle method 
-
-for (i in 1:100) {
-  print(i)
+adaptive.land.geno = function(geno.mat, res = 0.01, 
+                              x = NULL, # POSITION from 1 to 100 (placing a ball on the landscape)
+                              vector.field.plot = FALSE, 
+                              chrx=NULL, chry=NULL) {
+  # if (vector.field.plot) {
+  #   par(mfrow = c(2,1))
+  # }
+  # Sequence of X 
+  seq.x = seq(from = 0, to = 1, by = res)
+  # Make a matrix 
+  space = outer(seq.x,seq.x,"*") 
+  # Plot the matrix of all combinations of genotype frequencies
+  # image.plot(space, ylim=c(1.05,-0.05), ylab= "Percentage of Chromosome EF of TD form", xlab= "Percentage of Chromosome CD of BL form")
+  # Backup the data 
+  space2 = space
   
-  if (i==1) {
-    points(seq.x[x1],seq.x[x2], pch =19, col = "red")
-    circl.dat = circle(seq.x[x1],seq.x[x2],.01)
+  if (dim(geno.mat)[1]==1) {
+    # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
+    # From Lamicchaney 
+    fill.seq = seq.x
+    for (i in 1:length(seq.x)) {
+      # Calculate mean fitness 
+      fill.seq[i] =   (geno.fit2/max(geno.fit2)) %*% all.p(1-seq.x[i])
+    }
+    plot(fill.seq~seq.x, pch = 19);abline(lm(fill.seq~seq.x), lwd = 4, col = "red")
+    x = NULL
   } else {
-    circl.dat = circle(x1,x2,.01)
+    # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
+    for (i in 1:length(seq.x)) {
+      for (j in 1:length(seq.x)) {
+        # Calculate mean fitness 
+        space[i,j] = all.p(1-seq.x[i]) %*% geno.mat %*% all.p(1-seq.x[j])
+      }
+    }
+    # Show the result 
+    round(t(space),3)
+    
+    if (is.null(chrx)) {  chrx = "A"  }
+    if (is.null(chry)) {  chry = "B"  }
+    
+    # Transform the space
+    new.space = t(space)
+    image.plot(new.space, 
+               ylim = rev(c(0,1)),
+               # ylim=c( 1.01,-0.01), 
+               ylab= paste("Percentage of Chromosome",chry, sep = " "),
+               xlab= paste("Percentage of Chromosome",chrx, sep = " "))
+    # Add the numbers to get a better sense of the average fitness values at each point 
+    by.text = 8
+    for (i in seq(1,length(seq.x),by = by.text)) {
+      for (j in seq(1,length(seq.x),by = by.text)) {
+        text(seq.x[i],seq.x[j],
+             labels = round(new.space[i,j],4),
+             cex = new.space[i,j]/2, 
+             col = "black") # col = "gray70"
+      }
+    }
+    # Add contour lines 
+    contour(new.space,ylim=c(1,0),add = T, nlevels = 50)
+    
   }
-  circl.dat$fit = rep(NA,length(circl.dat$x))
-  # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
-  for (k in 1:length(circl.dat$x)) {
-    # Calculate mean fitness 
-    circl.dat$fit[k] = all.p(1-circl.dat$y[k]) %*% geno.fit %*% all.p(1-circl.dat$x[k])
+  
+  dim.mat = dim(new.space)
+  
+  if(!is.null(x)){
+    x1 = x[1]
+    x2 = x[2]
+    set.seed(1246)
+    # Circle method 
+    for (i in 1:100) {
+      print(i)
+      
+      # add the starting point 
+      if (i==1) {
+        points(seq.x[x1],seq.x[x2], pch =19, col = "red")
+        circl.dat = circle(seq.x[x1],seq.x[x2],.01)
+      } else {
+        circl.dat = circle(x1,x2,.01)
+      }
+      # recalculate the fitness 
+      circl.dat$fit = rep(NA,length(circl.dat$x))
+      # calculate the average fitness for EVERY combination of frequency of 2 genotypes 
+      for (k in 1:length(circl.dat$x)) {
+        # Calculate mean fitness 
+        circl.dat$fit[k] = all.p(1-circl.dat$y[k]) %*% geno.mat %*% all.p(1-circl.dat$x[k])
+      }
+      x1 = circl.dat$x[which.max(circl.dat$fit)]
+      x2 = circl.dat$y[which.max(circl.dat$fit)]
+      points(circl.dat$x,circl.dat$y,cex = -log(circl.dat$fit/max(circl.dat$fit))*12)
+      points(x1, x2, col = "green", pch = 19)
+    }
   }
-  x1 = circl.dat$x[which.max(circl.dat$fit)]
-  x2 = circl.dat$y[which.max(circl.dat$fit)]
-  points(circl.dat$x,circl.dat$y,cex = -log(circl.dat$fit/max(circl.dat$fit))*12)
-  points(x1, x2, col = "green", pch = 19)
+  # To get the 3D plane in an INTERACTIVE graph 
+  xyz=cbind(expand.grid(x = seq.x,
+                        y = seq.x),
+            fit = as.vector(new.space))
+  
+  # Vector field on the Adaptive landscape ----------------------------------
+  r <-raster(
+    space,
+    xmn=range(seq.x)[1], xmx=range(seq.x)[2],
+    ymn=range(seq.x)[1], ymx=range(seq.x)[2],
+    crs=CRS("+proj=utm +zone=11 +datum=NAD83")
+  )
+  
+  # Draw the adaptive landscape
+  if (vector.field.plot) {
+    raster2quiver(rast = r, aggregate = 2, colours = tim.colors(100)) 
+  }
+  
+  return(list(new.space= new.space, xyz= xyz, raster = r))
 }
+
+
+# Genotype fitness matrix -------------------------------------------------
+geno.fit = matrix(c(0.791,1.000,0.834,
+                    0.670,1.006,0.901,
+                    0.657,0.657,1.067), 
+                  nrow = 3, 
+                  ncol = 3,
+                  byrow = T)
+geno.fit.space = adaptive.land.geno(geno.mat = geno.fit, x = c(90,10))
+geno.fit2 = matrix(c(30.0,53.1,73.7),
+                   nrow = 1, 
+                   ncol = 3,
+                   byrow = T)
+geno.fit2.space = adaptive.land.geno(geno.mat = geno.fit2)
+
+genot.mat.fit = structure(c(0, 0.4, 0.206896551724138, 0.444444444444444, 0.55421686746988, 
+                            0.323943661971831, 0.508771929824561, 0.522556390977444, 0.777777777777778), dim = c(3L, 3L))
+geno.mat.fit.space = adaptive.land.geno(geno.mat = genot.mat.fit, x = c(50,50), 
+                                        chrx = "LR761574.1_33199177",chry = "LR761574.1_33200027")
+
+set.seed(1235)
+fake.gen = matrix(data = runif(n = 9), nrow = 3, ncol = 3)
+(fake.gen = matrix(data = c(0,3,0,
+                            1,0,3.1,
+                            2,2,0), nrow = 3, ncol = 3, byrow = T))
+# fake.gen = matrix(data = 1:9, nrow = 3, ncol = 3, byrow = T)
+tmp = adaptive.land.geno(geno.mat = fake.gen/max(fake.gen), x = c(90,12))
+tmp = adaptive.land.geno(geno.mat = fake.gen/max(fake.gen), x = c(12,33))
+tmp = adaptive.land.geno(geno.mat = fake.gen/max(fake.gen), x = c(12,41))
+
+# Plotly 3D graph  --------------------------------------------------------
+plotly.data = tmp
+fit.mat = matrix(plotly.data$xyz$fit,
+                 ncol = nrow(plotly.data$new.space), 
+                 nrow = nrow(plotly.data$new.space), byrow = T)
+plotly.data$fit.mat = fit.mat
+
+# adds points 
+# plot_ly(x = rev(plotly.data$xyz[,1]),
+#         y = plotly.data$xyz[,2],
+#         z = plotly.data$xyz[,3],
+#         color = plotly.data$xyz[,3], type = "scatter3d", mode = "markers") %>%
+# Add surface 
+plot_ly() %>% 
+  add_surface(data = plotly.data,  
+              x=rev(plotly.data$xyz$x), 
+              y=unique(plotly.data$xyz$y), 
+              z=plotly.data$fit.mat) %>% 
+  layout(yaxis  = list(range = c(1, 0), autorange = F, autorange="reversed"),showlegend = F)
