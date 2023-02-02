@@ -190,7 +190,7 @@ adaptive.land.geno = function(geno.mat, res = 0.01,
             fit = as.vector(new.space))
   
   # Vector field on the Adaptive landscape ----------------------------------
-  r <-raster(
+  r <- raster::raster(
     space,
     xmn=range(seq.x)[1], xmx=range(seq.x)[2],
     ymn=range(seq.x)[1], ymx=range(seq.x)[2],
