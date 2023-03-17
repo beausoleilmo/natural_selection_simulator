@@ -7,12 +7,20 @@
   # Check a 3 allele HWE 
 # Requires                                                                            #
 # NOTES:                                                                              #
+  # Computing HWE for 2 alleles 
+  # (p+q) = 1
+  # (p+q)^2 = 1^2
+  # (p+q)(p+q) = 1
+  # p2 + 2pq + q2 = 1
+
   # Computing HWE for 3 alleles 
   # The proportions still need to equate 1 
   # (p+q+r) = 1
   # To get the genotypes 
   # (p+q+r)^2 = 1^2
   # (p+q+r)(p+q+r) = 1
+  # (p+q+r+s)(p+q+r+s) = 1
+  # p2 + q2 + r2 + s2 + pq2 + pr2 + ps2 + qr2 + qs2 + rs2 = 1
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 hwe.3alleles = function(p,q,r) {
   p2 = p^2
