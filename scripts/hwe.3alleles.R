@@ -22,6 +22,10 @@
   # (p+q+r+s)(p+q+r+s) = 1
   # p2 + q2 + r2 + s2 + pq2 + pr2 + ps2 + qr2 + qs2 + rs2 = 1
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
+
+library(tidyverse)
+library(viridis)
+
 hwe.3alleles = function(p,q,r) {
   p2 = p^2
   q2 = q^2
