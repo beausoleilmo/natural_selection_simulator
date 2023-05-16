@@ -33,10 +33,11 @@ geno.table = pop.geno %>%
          hs = 2*p*q) %>% 
   as.data.frame()
 
-fst.cal <- function(hs, ht) {
-  fst = (ht-(hs))/ht
-  return(fst)
-}
+# fst.cal <- function(hs, ht) {
+#   fst = (ht-(hs))/ht
+#   return(fst)
+# }
+
 fst.cal <- function(h1, h2) {
   fst = (h2-(h1))/h2
   return(fst)
@@ -44,7 +45,7 @@ fst.cal <- function(h1, h2) {
 
 # fst.cal(hs = 0.1424, ht = 0.2371)
 
-fst.cal(hs = mean(geno.table$hs), ht = ht)
+fst.cal(h1 = mean(geno.table$hs), h2 = ht)
 
 ###
 
@@ -75,6 +76,6 @@ hr = sum(region.sub$nb*region.sub$mean.het)/sum(region.sub$nb)
 # Heterozygosity FROM the allele FQ (expect) considering the TOTAL population (without subdivision)
 ht = 2*mean(table.4.1$all.fq)*(1-mean(table.4.1$all.fq))
 
-fst.cal(hr, ht)
-fst.cal(hs, ht)
-fst.cal(hs, hr)
+fst.cal(hr, ht) # Frt
+fst.cal(hs, ht) # Fst
+fst.cal(hs, hr) # Frs
