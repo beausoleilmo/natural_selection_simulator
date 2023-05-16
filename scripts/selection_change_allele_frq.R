@@ -5,7 +5,7 @@
 # Created March 18, 2023
 
 # Why:
-  # selection changes allele frequencies 
+  # selection changes allele frequencies (See how selection changes allele frq)
 
 # Requires 
 
