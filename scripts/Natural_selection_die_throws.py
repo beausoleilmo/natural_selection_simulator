@@ -1,0 +1,70 @@
+#!/usr/bin/env shython
+#!/usr/bin/python
+
+# How does evolution through natural selection work?
+#
+# What is the chance of getting 1000 sixes with 1000 dice?
+#
+# If you only throw once: 1/6^1000 =
+#
+# .0000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000000000000000000000000000000000000000000\
+# 00000000000000000000000000000007
+#
+# But if you keep the sixes after each throw, then after just 40 throws
+# the chance is 50% that you have 1000 sixes.
+#
+# In general it seems you should throw 4 + 12*log10(dice) times.
+#
+# Natural selection favors survival of the fittest, so it favors the
+# good genes and let the others die out.
+
+from random import random
+import sys
+
+def median(lst):
+  lst = sorted(lst)
+n = len(lst)
+if n < 1:
+  return None
+if n % 2 == 1:
+  return lst[n//2]
+else:
+  return sum(lst[n//2-1:n//2+1])/2.0
+
+tests = 1000
+dice = int(sys.argv[1])
+nothrows = []
+
+for test in xrange(1,tests):
+  sixes = 0
+throws = 0
+while sixes <> dice:
+  throws += 1
+# make a throw
+for t in xrange(sixes,dice):
+  if int(random()*6)+1 == 6:
+  sixes += 1
+
+nothrows.append(throws)
+
+# 1 => 4
+# 10 => 16
+# 100 => 28
+# 1000 => 40-41
+# 10000 => 53
+# 100000 => 66
+# 1000000 => 78
+
+print "expect 4 + 12*log(dice)"
+print median(nothrows)
+
