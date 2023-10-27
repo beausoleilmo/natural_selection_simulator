@@ -12,11 +12,11 @@
 # Reference : 
 #### ### ### ## #### ### ### ## #### ### ### ## 
 
-dir.create("output/images", recursive = TRUE)
+dir.create("output/images", recursive = TRUE, showWarnings = FALSE)
+library(rgl)
 
 pdf("output/images/test_fitland.pdf", 
     height = 5,width = 5)
-library(rgl)
 color = "green"
 border = NA
 par(mfrow=c(2,2))
