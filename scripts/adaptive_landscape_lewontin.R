@@ -207,13 +207,144 @@ adaptive.land.geno = function(geno.mat, res = 0.01,
 
 
 # Genotype fitness matrix -------------------------------------------------
-geno.fit = matrix(c(0.791,1.000,0.834,
+geno.fit.lewonting = matrix(c(0.791,1.000,0.834,
                     0.670,1.006,0.901,
                     0.657,0.657,1.067), 
                   nrow = 3, 
                   ncol = 3,
                   byrow = T)
-geno.fit.space = adaptive.land.geno(geno.mat = geno.fit, x = c(90,10))
+
+geno.fit = matrix(c(0.791,1.10,0.834,
+                    0.670,1.006,0.901,
+                    0.657,0.657,1.067), 
+                  nrow = 3, 
+                  ncol = 3,
+                  byrow = T)
+geno.fit.space = adaptive.land.geno(geno.mat = geno.fit,
+                                    x = c(10,20,90,10))
+
+# Get the full adaptive.land.geno function 
+source("~/Github_proj/ATLAS-Genomics-Finches/scripts/analysis/0.bioinfo_fun/0.initialize_fun.R")
+adaptive.land.geno(geno.mat = geno.fit, add.txt = F, rev.y = T,
+                   add.contour = F,add.peak = F,
+                   add.half.lines = F,
+                   min.brk = .65, max.brk = 1.1)
+
+# Plotly 3D graph  --------------------------------------------------------
+plotly.data = geno.fit.space
+plotly.data$fit.mat = matrix(plotly.data$xyz$fit,
+                             ncol = nrow(plotly.data$new.space), 
+                             nrow = nrow(plotly.data$new.space), byrow = T)
+# Add surface 
+plot_ly() %>% 
+  add_surface(data = plotly.data,  
+              x=rev(plotly.data$xyz$x), 
+              y=unique(plotly.data$xyz$y), 
+              z=plotly.data$fit.mat) %>% 
+  layout(yaxis  = list(range = c(1, 0), autorange = F, autorange="reversed"),showlegend = F)
+
+
+library(plot3D)
+png(filename = "~/Desktop/test.adapt_lewontin.png", 
+    width = size, height = size, units = "in", bg = NA, res = 300)
+par(mar = c(1,0,0,0), oma = c(0,0,0,0), mfrow = c(1,1))
+
+p1 = persp3D(x = unique(plotly.data$xyz$x), 
+             y = unique(plotly.data$xyz$y), 
+             z = plotly.data$fit.mat, 
+             resfac = 1, # Resolution
+             facets = T, # True = surface, false = mesh  
+             colkey = list(side = 4, 
+                           plot = F, 
+                           length = 1, width = 1, dist = 0, 
+                           shift = 0, addlines = TRUE, col.clab = NULL, 
+                           cex.clab = par("cex.lab"), side.clab = NULL, 
+                           line.clab = NULL, adj.clab = NULL, font.clab = NULL),
+             contour = list(side = c("z"), nlevels = 10), # where to add contour 
+             # shade = 1, 
+             alpha = 1, 
+             xlab = "Trait 2", 
+             ylab = "Trait 1", 
+             zlab = "Fitness", 
+             box = T, # Draw the box # true will add everything around plot 
+             bty = "u", #c("b", "b2", "f", "g", "bl", "bl2", "u", "n")
+             # perspbox arguments
+             col.axis = "black", 
+             col.panel = "gray95", 
+             lwd.panel = 1,lwd.grid = 1,
+             col.grid = "grey", 
+             theta = 40,
+             phi = 35,
+             col=jet.col(100),
+             zlim=c(0.6,1.2))
+dev.off()
+
+
+
+
+# Genotype fitness matrix -------------------------------------------------
+geno.fit = matrix(c(1,1,1,
+                    1,0,1,
+                    1,1,1), 
+                  nrow = 3, 
+                  ncol = 3,
+                  byrow = T)
+geno.fit.space = adaptive.land.geno(geno.mat = geno.fit, 
+                                    x = list(c(10,20),
+                                             c(90,10)))
+
+# Plotly 3D graph  --------------------------------------------------------
+plotly.data = geno.fit.space
+plotly.data$fit.mat = matrix(plotly.data$xyz$fit,
+                             ncol = nrow(plotly.data$new.space), 
+                             nrow = nrow(plotly.data$new.space), byrow = T)
+# Add surface 
+plot_ly() %>% 
+  add_surface(data = plotly.data,  
+              x=rev(plotly.data$xyz$x), 
+              y=unique(plotly.data$xyz$y), 
+              z=plotly.data$fit.mat) %>% 
+  layout(yaxis  = list(range = c(1, 0), autorange = F, autorange="reversed"),showlegend = F)
+
+
+# png(filename = "~/Desktop/test.adapt_lewontin.png", 
+#     width = size, height = size, units = "in", bg = NA, res = 300)
+# par(mar = c(1,0,0,0), oma = c(0,0,0,0), mfrow = c(1,1))
+
+p1 = persp3D(x = unique(plotly.data$xyz$x), 
+             y = unique(plotly.data$xyz$y), 
+             z = plotly.data$fit.mat, 
+             resfac = 1, # Resolution
+             facets = T, # True = surface, false = mesh  
+             colkey = list(side = 4, 
+                           plot = F, 
+                           length = 1, width = 1, dist = 0, 
+                           shift = 0, addlines = TRUE, col.clab = NULL, 
+                           cex.clab = par("cex.lab"), side.clab = NULL, 
+                           line.clab = NULL, adj.clab = NULL, font.clab = NULL),
+             contour = list(side = c("z"), nlevels = 10), # where to add contour 
+             # shade = 1, 
+             alpha = 1, 
+             xlab = "Trait 2", 
+             ylab = "Trait 1", 
+             zlab = "Fitness", 
+             box = T, # Draw the box # true will add everything around plot 
+             bty = "u", #c("b", "b2", "f", "g", "bl", "bl2", "u", "n")
+             # perspbox arguments
+             col.axis = "black", 
+             col.panel = "gray95", 
+             lwd.panel = 1,lwd.grid = 1,
+             col.grid = "grey", 
+             theta = 40,
+             phi = 35,
+             col=jet.col(100),
+             zlim=c(0.6,1.2))
+
+
+
+
+
+
 geno.fit2 = matrix(c(30.0,53.1,73.7),
                    nrow = 1, 
                    ncol = 3,
@@ -254,3 +385,4 @@ plot_ly() %>%
               y=unique(plotly.data$xyz$y), 
               z=plotly.data$fit.mat) %>% 
   layout(yaxis  = list(range = c(1, 0), autorange = F, autorange="reversed"),showlegend = F)
+
